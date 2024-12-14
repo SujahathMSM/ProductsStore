@@ -42,19 +42,28 @@ app.post("/api/products", async (req, res) => {
 
 app.put("/api/products/:id", async (req, res) => {
   const { id } = req.params;
-  const { product } = req.body;
+  const product = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400).json({ success: false, message: "invalid product id" });
   }
 
-  try {
-    const updatedProduct = await Product.findByIdAndUpdate(id, product, {
-      new: true,
-    });
-    res.status(201).json({ success: true, message: updatedProduct });
-  } catch {
-    res.status(500).json({ success: false, message: "internal server error" });
+  const check = await Product.findById(id);
+  console.log(check);
+
+  if (check) {
+    try {
+      const updatedProduct = await Product.findByIdAndUpdate(id, product, {
+        new: true,
+      });
+      res.status(201).json({ success: true, message: updatedProduct });
+    } catch {
+      res
+        .status(500)
+        .json({ success: false, message: "internal server error" });
+    }
+  } else {
+    res.status(400).json({ success: false, message: "product not found in the databases" });
   }
 });
 
